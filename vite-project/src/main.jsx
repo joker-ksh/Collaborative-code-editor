@@ -19,7 +19,7 @@ const theme = createTheme({
     },
     text: {
       primary: "#ffffff", // Text color
-      secondary: "#bbbbbb", // Secondary text color
+      secondary: "#ffffff", // Secondary text color
     },
   },
 });
