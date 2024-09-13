@@ -20,7 +20,7 @@ export default function File() {
 
   return (
     <List
-      sx={{ width: '100%', bgcolor: 'background.paper' }}
+      sx={{ bgcolor: 'background.paper' }}
       component="nav"
       aria-labelledby="nested-list-subheader"
       subheader={
@@ -34,7 +34,6 @@ export default function File() {
           <FolderIcon   sx={{ color: 'white' }} /> {/* Represents a folder */}
         </ListItemIcon>
         <ListItemText primary="Documents"  sx={{ color: 'white' }} />
-        {open ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
