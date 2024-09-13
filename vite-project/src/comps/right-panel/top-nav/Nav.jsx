@@ -9,6 +9,9 @@ export default function Nav({ value, setValue }) {
 
   return (
     <BottomNavigation
+    sx={{
+      borderTopRightRadius: '20px',
+    }}
       showLabels
       value={value}
       onChange={(event, newValue) => {

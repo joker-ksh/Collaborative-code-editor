@@ -22,7 +22,11 @@ const Item = styled(Paper)(({ theme }) => ({
 
 export default function GridMain() {
   return (
-    <Grid2 container>
+    <Grid2 container
+    sx={{
+      padding: '20px',
+    }}
+    >
       <Grid2 size={2.5}>
         <Versions />
       </Grid2>

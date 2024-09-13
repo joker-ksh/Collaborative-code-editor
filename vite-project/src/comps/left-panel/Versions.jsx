@@ -45,6 +45,7 @@ export default function Versions() {
   return (
     <Box
       sx={{
+        borderTopLeftRadius: "20px",
         background: theme.palette.background.paper,
         height: "100vh",
         overflowY: "auto",
@@ -52,7 +53,12 @@ export default function Versions() {
         scrollbarColor: `${theme.palette.primary.main} ${theme.palette.background.paper}`,
       }}
     >
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
+      >
         <Tabs
           value={value}
           onChange={handleChange}
