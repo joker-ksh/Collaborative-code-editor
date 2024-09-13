@@ -7,14 +7,16 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     mode: "dark", // Set to 'light' or 'dark'
-    primary: {
-      main: "#222045", // Your primary color
-    },
-    secondary: {
-      main: "#dc004e", // Your secondary color
-    },
+    // primary: {
+    //   main: "#28264e", 
+      
+    // },
+    // secondary: {
+    //   main: "#dc004e", // Your secondary color
+    // },
     background: {
       default: "#0e0b33", // Background color
+      
       paper: "#0e0b33", // Paper (card) background color
     },
     text: {
@@ -22,7 +24,8 @@ const theme = createTheme({
       secondary: "#bbbbbb", // Secondary text color
     },
   },
-});
+}
+);
 
 createRoot(document.getElementById("root")).render(
   <ThemeProvider theme={theme}>
