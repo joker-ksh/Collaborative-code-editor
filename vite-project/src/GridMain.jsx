@@ -6,6 +6,9 @@ import Grid2 from '@mui/material/Grid2';
 import Versions from "./comps/left-panel/Versions";
 import Nav from "./comps/right-panel/top-nav/Nav";
 import Main from "./comps/right-panel/main";
+import NavTop from "./comps/editor-panel/nav-top/NavTop";
+import Core from "./comps/editor-panel/core/Core";
+import Bottom from "./comps/editor-panel/bottom-nav/Bottom";
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
   ...theme.typography.body2,
@@ -24,7 +27,8 @@ export default function GridMain() {
         <Versions />
       </Grid2>
       <Grid2 size={6}>
-        <Item>size=6</Item>
+        <NavTop />
+        <Core />
       </Grid2>
       <Grid2 size="grow">
         <Main></Main>
