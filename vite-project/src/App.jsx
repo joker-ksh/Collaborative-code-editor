@@ -4,7 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { Box, Button } from '@mui/material'
 import Nav from './comps/right-panel/top-nav/Nav'
-import Main from './comps/right-panel/main'
+import Versions from './comps/left-panel/Versions'
+import GridMain from './GridMain'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,7 +13,7 @@ function App() {
   return (
     <>
       <Box >
-        <Main />
+        <GridMain />
       </Box>
     </>
   )

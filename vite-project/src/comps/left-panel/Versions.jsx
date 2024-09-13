@@ -1,15 +1,13 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import File from './File';
-import { useTheme } from '@emotion/react';
-
+import * as React from "react";
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+import File from "./File";
+import { useTheme } from "@emotion/react";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -32,23 +30,36 @@ CustomTabPanel.propTypes = {
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
 }
 
 export default function Versions() {
   const [value, setValue] = React.useState(0);
+  const theme = useTheme();
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
   return (
-    <Box sx={{ background : 'black' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab  label="Item One" {...a11yProps(0)} />
-          <Tab  label="Item Two" {...a11yProps(1)} />
+    <Box
+      sx={{
+        background: theme.palette.background.paper,
+        height: "100vh",
+        overflowY: "auto",
+        scrollbarWidth: "thin",
+        scrollbarColor: `${theme.palette.primary.main} ${theme.palette.background.paper}`,
+      }}
+    >
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          aria-label="basic tabs example"
+        >
+          <Tab label="Item One" {...a11yProps(0)} />
+          <Tab label="Item Two" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
@@ -57,6 +68,14 @@ export default function Versions() {
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
         {/* the version comp */}
+        <File />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={0}>
+        {/* the file comp */}
+        <File />
+      </CustomTabPanel>{" "}
+      <CustomTabPanel value={value} index={0}>
+        {/* the file comp */}
         <File />
       </CustomTabPanel>
     </Box>

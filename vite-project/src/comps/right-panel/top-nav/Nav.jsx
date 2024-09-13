@@ -3,6 +3,7 @@ import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
+import { Divider } from "@mui/material";
 
 export default function Nav({ value, setValue }) {
 
