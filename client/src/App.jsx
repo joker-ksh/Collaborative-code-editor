@@ -6,14 +6,16 @@ import { Box, Button } from '@mui/material'
 import Nav from './comps/right-panel/top-nav/Nav'
 import Versions from './comps/left-panel/Versions'
 import GridMain from './GridMain'
+import { useAuth } from './AuthContext'
+import Auth from './AuthPage'
+import CollaborativeEditor from './CollaborativeEditor'
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const {isAuthenticated , token } = useAuth()
   return (
     <>
       <Box >
-        <GridMain />
+        {isAuthenticated ? <CollaborativeEditor token={token} fileName={"hello.js"} username={"admin"}/> : <Auth />}
       </Box>
     </>
   )

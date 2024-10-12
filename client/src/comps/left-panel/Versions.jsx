@@ -72,18 +72,7 @@ export default function Versions() {
         {/* the file comp */}
         <File />
       </CustomTabPanel>
-      <CustomTabPanel value={value} index={1}>
-        {/* the version comp */}
-        <File />
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={0}>
-        {/* the file comp */}
-        <File />
-      </CustomTabPanel>{" "}
-      <CustomTabPanel value={value} index={0}>
-        {/* the file comp */}
-        <File />
-      </CustomTabPanel>
+    
     </Box>
   );
 }
