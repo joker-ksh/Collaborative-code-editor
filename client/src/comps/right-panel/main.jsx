@@ -2,6 +2,7 @@ import React from 'react'
 import Nav from './top-nav/Nav'
 import { Divider, Typography } from '@mui/material';
 import Console from './Console';
+import Hosting from './Hosting';
 
 export default function () {
     const [value, setValue] = React.useState(0);
@@ -13,7 +14,7 @@ export default function () {
         <Divider variant='middle'/>
         <Typography component="div" >
             {value === 0 && <Console consoleText={consoleText}/>}
-            {value === 1 &&  <Console consoleText={ins}/>}
+            {value === 1 &&  <Hosting consoleText={ins}/>}
         </Typography>
 
     </div>

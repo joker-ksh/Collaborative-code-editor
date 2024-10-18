@@ -1,8 +1,6 @@
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
-const Y = require('yjs');
-const utils = require('y-websocket/bin/utils');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
@@ -22,8 +20,7 @@ const BASE_DIR = './codes';
 app.use(bodyParser.json());
 app.use(cors());
 
-// Yjs document store
-const docs = new Map();
+let rooms = {}; // Store rooms and their associated clients
 
 // Get users from the file
 const getUsers = () => {
@@ -49,7 +46,6 @@ app.post('/register', async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-
   const newUser = { id: users.length + 1, username, password: hashedPassword };
   users.push(newUser);
   saveUsers(users);
@@ -65,8 +61,9 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
-  
+
   const user = users.find((u) => u.username === username);
+  console.log(users);
   if (!user) {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
@@ -83,10 +80,11 @@ app.post('/login', async (req, res) => {
   res.json({ token });
 });
 
+// Token authentication middleware
 const authenticateToken = (req, res, next) => {
   let token = req.headers['authorization'];
   if (!token) return res.status(401).json({ message: 'Access denied' });
-  
+
   token = token.split(' ')[1];
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
@@ -96,54 +94,89 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// WebSocket connection handler
-wss.on('connection', (conn, req) => {
-  const token = req.url.split('token=')[1];
-    // get the path from the request url without the leading '/' without params
-  const docName = req.url.split('?')[0].slice(1);
-  if (!token) {
-    conn.close(1008, 'Authentication failed');
-    return;
-  }
+wss.on('connection', (ws, req) => {
+  console.log('New client connected');
 
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) {
-      conn.close(1008, 'Invalid token');
-      return;
+  // Handle messages from clients
+  ws.on('message', async (message) => {
+    const msg = JSON.parse(message);
+    console.log(msg);
+
+    if (msg.type === 'join') {
+      const roomId = msg.roomId;
+      const username = msg.username; // Assuming the message contains the username
+
+      if (!rooms[roomId]) {
+        rooms[roomId] = { clients: [], host: null };
+      }
+
+      // If no host is present, the joining client becomes the host
+      if (!rooms[roomId].host) {
+        rooms[roomId].host = username;
+        const hostFiles =  get_user_files(username);
+        ws.roomId = roomId; // Store the room ID in the WebSocket instance
+        ws.username = username; // Store the username in the WebSocket instance
+        rooms[roomId].clients.push(ws);
+        broadcastToRoom(roomId, { type: 'file_list', files: hostFiles });
+  
+        // Fetch the files for the host and broadcast them to all clients
+      } else {
+        // If the room already has a host, fetch the host's files for the new client only
+        const hostUsername = rooms[roomId].host;
+        const hostFiles = get_user_files(hostUsername);
+        
+        // Send the file list only to the new client
+        ws.send(JSON.stringify({ type: 'file_list', files: hostFiles }));
+        ws.roomId = roomId; // Store the room ID in the WebSocket instance
+        ws.username = username; // Store the username in the WebSocket instance
+        rooms[roomId].clients.push(ws);
+      }
+
+      // Add the new client to the room
+      
+     
+
+      console.log(`Client ${username} joined room ${roomId}`);
     }
 
-    const username = decoded.username;
-    // const docName = req.url.split('document=')[1];
-    console.log('Connection established:', username, docName);
-    
-    let doc = docs.get(docName);
-    if (!doc) {
-      doc = new Y.Doc();
-      const permissions = doc.getMap('permissions');
-      permissions.set(username, { canRead: true, canWrite: true, canShare: true });
-      docs.set(docName, doc);
+    // Handle file actions (like edits or updates)
+    else if (msg.type === 'file_action') {
+      const roomId = ws.roomId;
+      if (rooms[roomId]) {
+        broadcastToRoom(roomId, { type: 'file_action', payload: msg.payload });
+      }
     }
+  });
 
-    // Check user permissions
-    const permissions = doc.getMap('permissions');
-    const userPermissions = permissions.get(username);
-    
-    if (!userPermissions || !userPermissions.canRead) {
-      conn.close(1008, 'Permission denied');
-      return;
+  // Handle client disconnect
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    const roomId = ws.roomId;
+    if (roomId && rooms[roomId]) {
+      rooms[roomId].clients = rooms[roomId].clients.filter(client => client !== ws);
+      if (rooms[roomId].clients.length === 0) {
+        delete rooms[roomId]; // Remove the room if empty
+      }
     }
-
-    utils.setupWSConnection(conn, req, { 
-      docName,
-      gc: true,
-      permissions: userPermissions
-    });
   });
 });
 
+
+// Function to broadcast messages to all clients in a specific room
+const broadcastToRoom = (roomId, message) => {
+  console.log(rooms[roomId] , message)
+  if (rooms[roomId]) {
+    rooms[roomId].clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(message));
+      }
+    });
+  }
+};
+
 // Create a new file
 app.post('/create-file', authenticateToken, (req, res) => {
-  const { fileName, content } = req.body;
+  const { fileName, content, roomId } = req.body;
   const userFolderPath = path.join(BASE_DIR, req.user.username);
 
   if (!fs.existsSync(userFolderPath)) {
@@ -158,13 +191,8 @@ app.post('/create-file', authenticateToken, (req, res) => {
 
   fs.writeFileSync(filePath, content || '', 'utf8');
 
-  // Create Yjs document for the new file
-  const doc = new Y.Doc();
-  const ytext = doc.getText('monaco');
-  ytext.insert(0, content || '');
-  const permissions = doc.getMap('permissions');
-  permissions.set(req.user.username, { canRead: true, canWrite: true, canShare: true });
-  docs.set(fileName, doc);
+  // Broadcast file creation to all connected clients in the room
+  broadcastToRoom(roomId, { type: 'file_created', payload: { fileName, user: req.user.username } });
 
   res.status(201).json({ message: 'File created successfully', file: { name: fileName, content } });
 });
@@ -172,25 +200,47 @@ app.post('/create-file', authenticateToken, (req, res) => {
 // Get list of files
 app.get('/files', authenticateToken, (req, res) => {
   const userFolderPath = path.join(BASE_DIR, req.user.username);
+  const files = getFiles(userFolderPath); 
+  
 
+  res.json(files);
+});
+function get_user_files(username){
+  const userFolderPath = path.join(BASE_DIR, username);
+  const files = getFiles(userFolderPath); 
+  return files;
+}
+
+function getFiles(userFolderPath) {
   if (!fs.existsSync(userFolderPath)) {
-    return res.json([]);
+    return [];
   }
 
   const files = fs.readdirSync(userFolderPath).map((fileName) => {
     return { name: fileName, path: path.join(userFolderPath, fileName) };
   });
+  return files
+}
+function checkSameRoom(req,res,next){
+  // set the hostname from the rooms object and catch the error if the room is not found
+  try{
+    req.curhost = rooms[req.body.roomId].host;
+    next();
+  }
+  catch(err){
+    res.status(400).json({ message: 'Room not found' });
+  }
+  
 
-  res.json(files);
-});
+}
 
 // Get a specific file's content
-app.get('/file/:fileName', authenticateToken, (req, res) => {
-  const userFolderPath = path.join(BASE_DIR, req.user.username);
+app.post('/file/:fileName', checkSameRoom, (req, res) => {
+  const userFolderPath = path.join(BASE_DIR, req.curhost);
   const { fileName } = req.params;
 
   const filePath = path.join(userFolderPath, fileName);
-
+  console.log(filePath)
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ message: 'File not found' });
   }
@@ -202,7 +252,7 @@ app.get('/file/:fileName', authenticateToken, (req, res) => {
 // Delete a file
 app.delete('/file/:fileName', authenticateToken, (req, res) => {
   const userFolderPath = path.join(BASE_DIR, req.user.username);
-  const { fileName } = req.params;
+  const { fileName, roomId } = req.body; // Assuming roomId is sent in the body
 
   const filePath = path.join(userFolderPath, fileName);
 
@@ -212,44 +262,10 @@ app.delete('/file/:fileName', authenticateToken, (req, res) => {
 
   fs.unlinkSync(filePath);
   
-  // Remove Yjs document for the deleted file
-  docs.delete(fileName);
+  // Broadcast file deletion to all connected clients in the room
+  broadcastToRoom(roomId, { type: 'file_deleted', payload: { fileName, user: req.user.username } });
 
   res.json({ message: 'File deleted successfully' });
-});
-
-// Update permissions
-app.post('/update-permissions', authenticateToken, (req, res) => {
-  const { docName, targetUser, newPermissions } = req.body;
-  const doc = docs.get(docName);
-  
-  if (!doc) {
-    return res.status(404).json({ message: 'Document not found' });
-  }
-
-  const permissions = doc.getMap('permissions');
-  const requesterPermissions = permissions.get(req.user.username);
-
-  if (!requesterPermissions || !requesterPermissions.canShare) {
-    return res.status(403).json({ message: 'Permission denied' });
-  }
-
-  permissions.set(targetUser, newPermissions);
-  
-  res.json({ message: 'Permissions updated successfully' });
-});
-
-// Get permissions
-app.get('/permissions/:docName', authenticateToken, (req, res) => {
-  const { docName } = req.params;
-  const doc = docs.get(docName);
-  
-  if (!doc) {
-    return res.status(404).json({ message: 'Document not found' });
-  }
-
-  const permissions = doc.getMap('permissions');
-  res.json(Object.fromEntries(permissions));
 });
 
 server.listen(PORT, () => {

@@ -1,58 +1,50 @@
-import React, { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { MonacoBinding } from 'y-monaco';
-import * as monaco from 'monaco-editor';
+import React, { useEffect, useMemo, useState } from 'react';
+import Editor from '@monaco-editor/react';
 
-const CollaborativeEditor = ({ fileName, token, username }) => {
-  const editorRef = useRef(null);
-  const [permissions, setPermissions] = useState({ canRead: false, canWrite: false, canShare: false });
-    console.log(fileName, token, username)
+const CollaborativeEditor = ({ roomId }) => {
+  const ydoc = useMemo(() => new Y.Doc(), []);
+  const [editor, setEditor] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [binding, setBinding] = useState(null);
+
   useEffect(() => {
-    const ydoc = new Y.Doc();
-    const provider = new WebsocketProvider(
-      `ws://localhost:3000`,
-      `${fileName}?token=${token}`,
-      ydoc
-    );
-
-    const type = ydoc.getText('monaco');
-    const permissionsMap = ydoc.getMap('permissions');
-
-    const editor = monaco.editor.create(editorRef.current, {
-      value: '',
-      language: 'javascript',
-      theme: 'vs-dark',
-      readOnly: !permissions.canWrite
-    });
-
-    const binding = new MonacoBinding(type, editor.getModel(), new Set([editor]), provider.awareness);
-    editor.bindings = [binding];
-    const updatePermissions = () => {
-      const userPermissions = permissionsMap.get(username) || { canRead: false, canWrite: false, canShare: false };
-      setPermissions(userPermissions);
-      editor.updateOptions({ readOnly: !userPermissions.canWrite });
-    };
-
-    permissionsMap.observe(updatePermissions);
-    updatePermissions();
+    const websocketProvider = new WebsocketProvider(`ws://localhost:1234`, roomId, ydoc);
+    setProvider(websocketProvider);
 
     return () => {
-      editor.dispose();
-      provider.disconnect();
+      if(websocketProvider.wsconnected) {
+        websocketProvider.disconnect();
+      }
+      ydoc.destroy();
     };
-  }, [fileName, token, username]);
+  }, [roomId, ydoc]);
+
+  useEffect(() => {
+    if (provider === null || editor === null) return;
+
+    const monacoBinding = new MonacoBinding(
+      ydoc.getText('monaco'),  // Shared Yjs text for this specific editor
+      editor.getModel(),        // Monaco editor model
+      new Set([editor]),        // Bindings (editors)
+      provider.awareness        // Awareness for real-time collaboration
+    );
+    setBinding(monacoBinding);
+
+    return () => {
+      monacoBinding.destroy();
+    };
+  }, [provider, editor, ydoc]);
 
   return (
-    <div>
-      <div ref={editorRef} style={{ height: '90vh', width: '100%' }} />
-      <div>
-        Permissions: 
-        Read: {permissions.canRead ? 'Yes' : 'No'}, 
-        Write: {permissions.canWrite ? 'Yes' : 'No'}, 
-        Share: {permissions.canShare ? 'Yes' : 'No'}
-      </div>
-    </div>
+    <Editor
+      height="90vh"
+      defaultValue="// Start coding..."
+      defaultLanguage="javascript"
+      onMount={editorInstance => setEditor(editorInstance)} // Set editor instance when mounted
+    />
   );
 };
 
