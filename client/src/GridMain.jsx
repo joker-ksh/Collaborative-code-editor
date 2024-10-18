@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -9,18 +9,25 @@ import Main from "./comps/right-panel/main";
 import NavTop from "./comps/editor-panel/nav-top/NavTop";
 import Core from "./comps/editor-panel/core/Core";
 import Bottom from "./comps/editor-panel/bottom-nav/Bottom";
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-  ...theme.applyStyles('dark', {
-    backgroundColor: '#1A2027',
-  }),
-}));
+import { useWebSocket } from "./WebSocketContext";
+import { useAuth } from "./AuthContext";
+// const Item = styled(Paper)(({ theme }) => ({
+//   backgroundColor: '#fff',
+//   ...theme.typography.body2,
+//   padding: theme.spacing(1),
+//   textAlign: 'center',
+//   color: theme.palette.text.secondary,
+//   ...theme.applyStyles('dark', {
+//     backgroundColor: '#1A2027',
+//   }),
+// }));
+
+
 
 export default function GridMain() {
+  const [selectedFile, setSelectedFile] = React.useState("hello.js");
+  const {roomId} = useAuth();
+
   return (
     <Grid2 container
     sx={{
@@ -32,7 +39,7 @@ export default function GridMain() {
       </Grid2>
       <Grid2 size={6}>
         <NavTop />
-        <Core />
+        {roomId && (<Core  roomId={roomId}  selectedFile={selectedFile}/>)}
       </Grid2>
       <Grid2 size="grow">
         <Main></Main>

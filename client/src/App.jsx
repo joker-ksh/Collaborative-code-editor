@@ -15,7 +15,9 @@ function App() {
   return (
     <>
       <Box >
-        {isAuthenticated ? <CollaborativeEditor token={token} fileName={"hello.js"} username={"admin"}/> : <Auth />}
+        {isAuthenticated ? <GridMain/> : <Auth />}
+        {/* <GridMain/> */}
+
       </Box>
     </>
   )

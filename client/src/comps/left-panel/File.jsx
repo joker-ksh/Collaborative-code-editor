@@ -8,6 +8,7 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile"; // Icon f
 import { useState, useEffect } from "react";
 import { useAuth } from "../../AuthContext";
 import { Box, Button, TextField } from "@mui/material";
+import { useWebSocket } from "../../WebSocketContext";
 
 const apiUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -17,8 +18,16 @@ export default function File() {
   const [error, setError] = useState(null);
   const [newFileName, setNewFileName] = useState(""); // State to store new file name
   const { token } = useAuth();
-
+  const {files} = useWebSocket();
+  useEffect(() => {
+    if (files) {
+      setFileList(files);
+      setLoading(false);
+      
+    }
+  }, [files]);
   // Function to fetch the file structure
+  console.log(fileList); 
   const fetchFileStructure = async () => {
     try {
       const response = await fetch(apiUrl + "/files", {
@@ -41,9 +50,9 @@ export default function File() {
     }
   };
 
-  useEffect(() => {
-    fetchFileStructure();
-  }, [token]);
+  // useEffect(() => {
+  //   fetchFileStructure();
+  // }, [token]);
 
   // Handle file creation
   const handleCreateFile = async () => {
