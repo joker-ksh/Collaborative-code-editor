@@ -3,8 +3,8 @@ import blackboardTheme from 'monaco-themes/themes/Blackboard.json';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { MonacoBinding } from 'y-monaco';
-import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios'; 
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import axios from 'axios';  
 
 // env
 const apiUrl = import.meta.env.VITE_SERVER_URL;
@@ -14,6 +14,7 @@ export default function Core({ roomId, selectedFile }) {
   const [editor, setEditor] = useState(null);
   const [provider, setProvider] = useState(null);
   const [binding, setBinding] = useState(null);
+  const initialFetchDone = useRef(false);
 
   function handleEditorMount(_, editor) {
     setEditor(_);
@@ -23,35 +24,39 @@ export default function Core({ roomId, selectedFile }) {
 
   const fetchFileContent = async () => {
     try {
-      const response = await axios.post(`${apiUrl}/file/${selectedFile}`, {
-        roomId: roomId  
-      });
-      
-      // Set the Yjs text with the fetched file content
-      if(ydoc.getText('monaco').length == 0) {
-        ydoc.getText('monaco').insert(0, response.data.content);
+      const monacoText = ydoc.getText('monaco');
+
+      if (monacoText.length === 0) {
+        console.log('Fetching content from the server...');
+        const response = await axios.post(`${apiUrl}/file/${selectedFile}`, {
+          roomId: roomId  
+        });
+
+        ydoc.transact(() => {
+          monacoText.insert(0, response.data.content);
+        });
+      } else {
+        console.log('Content already present in the document.');
       }
-        
-      
     } catch (error) {
       console.error("Error fetching file content:", error);
-      // You might want to set some default text in the Yjs document
-      ydoc.getText('monaco').insert(0, '// Error loading file');
+      if (monacoText.length === 0) {
+        ydoc.getText('monaco').insert(0, '// Error loading file');
+      }
     }
   };
-
+  
   useEffect(() => {
     const room_id = `${roomId}-${selectedFile}`;
     const websocketProvider = new WebsocketProvider(`ws://localhost:1234`, room_id, ydoc);
     setProvider(websocketProvider);
 
-    websocketProvider.on('status', async ({ status }) => {
-      if (status === 'connected') {
-        const otherClients = websocketProvider.awareness.getStates().size;
-        console.log(`Connected to ${otherClients} other clients`);
-        if (otherClients === 1) {
-          await fetchFileContent(); 
-        }
+    initialFetchDone.current = false;
+
+    websocketProvider.on('sync', (isSynced) => {
+      if (isSynced && !initialFetchDone.current) {
+        fetchFileContent();
+        initialFetchDone.current = true;
       }
     });
 
