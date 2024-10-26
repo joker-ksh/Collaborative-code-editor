@@ -7,7 +7,7 @@ import File from "./File";
 import { useTheme } from "@emotion/react";
 
 function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, ...other  } = props;
   return (
     <div
       role="tabpanel"
@@ -34,7 +34,7 @@ function a11yProps(index) {
   };
 }
 
-export default function Versions() {
+export default function Versions({handleFileSelect}) {
   const [value, setValue] = React.useState(0);
   const theme = useTheme();
 
@@ -70,7 +70,7 @@ export default function Versions() {
       </Box>
       <CustomTabPanel value={value} index={0}>
         {/* the file comp */}
-        <File />
+        <File handleFileSelect={handleFileSelect} />
       </CustomTabPanel>
     
     </Box>

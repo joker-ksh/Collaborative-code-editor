@@ -24,9 +24,13 @@ import { useAuth } from "./AuthContext";
 
 
 
+
 export default function GridMain() {
-  const [selectedFile, setSelectedFile] = React.useState("hello.js");
+  const [selectedFile, setSelectedFile] = React.useState(null);
   const {roomId} = useAuth();
+  function handleFileSelect(e){
+    setSelectedFile(e.name)
+  }
 
   return (
     <Grid2 container
@@ -35,11 +39,11 @@ export default function GridMain() {
     }}
     >
       <Grid2 size={2.5}>
-        <Versions />
+        <Versions handleFileSelect={handleFileSelect}/>
       </Grid2>
       <Grid2 size={6}>
         <NavTop />
-        {roomId && (<Core  roomId={roomId}  selectedFile={selectedFile}/>)}
+        {selectedFile && (<Core  roomId={roomId}  selectedFile={selectedFile}/>)}
       </Grid2>
       <Grid2 size="grow">
         <Main></Main>

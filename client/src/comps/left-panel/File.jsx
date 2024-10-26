@@ -12,7 +12,7 @@ import { useWebSocket } from "../../WebSocketContext";
 
 const apiUrl = import.meta.env.VITE_SERVER_URL;
 
-export default function File() {
+export default function File({handleFileSelect}) {
   const [fileList, setFileList] = useState([]); // Updated to hold the list of files
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -117,11 +117,11 @@ export default function File() {
 
         {/* List of files */}
         {fileList.map((file, index) => (
-          <ListItemButton key={index}>
+          <ListItemButton key={index} onClick={() => handleFileSelect(file)}>
             <ListItemIcon>
               <InsertDriveFileIcon sx={{ color: "white" }} /> {/* File Icon */}
             </ListItemIcon>
-            <ListItemText primary={file.name} sx={{ color: "white" }} />
+            <ListItemText  primary={file.name} sx={{ color: "white" }} />
           </ListItemButton>
         ))}
       </List>
