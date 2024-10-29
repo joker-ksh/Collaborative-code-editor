@@ -2,7 +2,8 @@
 
 A real-time collaborative code editor built with Monaco Editor, Yjs, and a WebSocket server. This project enables multiple users to edit code simultaneously, offering a seamless and interactive coding experience.
 
-[![Watch the video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://github.com/abdul2801/Collaborative-code-editor/blob/main/media-2024-10-29_17.29.05.mp4)
+
+https://github.com/user-attachments/assets/da22a86e-1594-4a0f-9f67-bcc37a30cd32
 
 
 ## Features
