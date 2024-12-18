@@ -176,7 +176,9 @@ const broadcastToRoom = (roomId, message) => {
 // Create a new file
 app.post('/create-file', authenticateToken, (req, res) => {
   const { fileName, content, roomId } = req.body;
-  const userFolderPath = path.join(BASE_DIR, req.user.username);
+  // const userFolderPath = path.join(BASE_DIR, req.user.username);
+  const userFolderPath = path.join(BASE_DIR, rooms[roomId].host);
+  console.log(userFolderPath)
 
   if (!fs.existsSync(userFolderPath)) {
     fs.mkdirSync(userFolderPath, { recursive: true });
@@ -191,9 +193,27 @@ app.post('/create-file', authenticateToken, (req, res) => {
   fs.writeFileSync(filePath, content || '', 'utf8');
 
   // Broadcast file creation to all connected clients in the room
-  broadcastToRoom(roomId, { type: 'file_created', payload: { fileName, user: req.user.username } });
+  broadcastToRoom(roomId, { type: 'create_file', payload: {name :  fileName } });
 
   res.status(201).json({ message: 'File created successfully', file: { name: fileName, content } });
+});
+// delete a file
+app.delete('/delete-file', authenticateToken, (req, res) => {
+  const { fileName, roomId } = req.body;
+  const userFolderPath = path.join(BASE_DIR, rooms[roomId].host);
+  console.log(fileName,"delete")
+  const filePath = path.join(userFolderPath, fileName);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'File not found' });
+  }
+
+  fs.unlinkSync(filePath);
+  
+  // Broadcast file deletion to all connected clients in the room
+  broadcastToRoom(roomId, { type: 'delete_file', payload: {name : fileName } });
+
+  res.json({ message: 'File deleted successfully' });
 });
 
 // Get list of files

@@ -26,12 +26,14 @@ export const WebSocketProvider = ({ children }) => {
           setFiles(data.files); // Update the file list
           break;
         case 'create_file':
-          console.log(`File created: ${data.fileName}`);
-          setFiles((prevFiles) => [...prevFiles, data.fileName]); // Add the new file to the list
+          console.log(`File created: ${data.payload.name}`);
+          
+          setFiles((prevFiles) => [...prevFiles, {name : data.payload.name}]); // Add the new file to the list
+          console.log(files);
           break;
         case 'delete_file':
-          console.log(`File deleted: ${data.fileName}`);
-          setFiles((prevFiles) => prevFiles.filter((file) => file !== data.fileName)); // Remove the file from the list
+          console.log(`File deleted: ${data.payload.name}`);
+          setFiles((prevFiles) => prevFiles.filter((file) => file.name !== data.payload.name)); // Remove the file from the list
           break;
         default:
           console.error(`Unknown message type: ${data.type}`);
