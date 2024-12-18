@@ -8,7 +8,7 @@ import axios from 'axios';
 
 // env
 const apiUrl = import.meta.env.VITE_SERVER_URL;
-
+const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
 export default function Core({ roomId, selectedFile }) {
   const [ydoc,setYdoc] = useState(new Y.Doc()); 
   const [editor, setEditor] = useState(null);
@@ -75,7 +75,7 @@ export default function Core({ roomId, selectedFile }) {
     }
   
     const room_id = `${roomId}-${selectedFile}`;
-    const websocketProvider = new WebsocketProvider(`ws://localhost:1234`, room_id, ydoc);
+    const websocketProvider = new WebsocketProvider(wsUrl, room_id, ydoc);
     setProvider(websocketProvider);
   
     // Add a small delay to allow awareness to sync
