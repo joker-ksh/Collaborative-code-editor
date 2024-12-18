@@ -6,10 +6,10 @@ export const WebSocketProvider = ({ children }) => {
   const [ws, setWs] = useState(null);
   const [files, setFiles] = useState([]); // State to store the list of files
   const [messageType, setMessageType] = useState(''); // Track the latest message type for debugging or logic
-  
+  const wsUrl = import.meta.env.VITE_WEBSOCKET_URL
 
   useEffect(() => {
-    const webSocket = new WebSocket('ws://localhost:3000'); // Replace with your WebSocket server URL
+    const webSocket = new WebSocket(wsUrl); // Replace with your WebSocket server URL
 
     webSocket.onopen = () => {
       console.log('WebSocket connection established');
