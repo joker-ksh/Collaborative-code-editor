@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       console.log(decoded);
       setUsername(decoded.username);
     }
-  }, []);
+  }, [token]);
 
   const login = (receivedToken) => {
     setIsAuthenticated(true);

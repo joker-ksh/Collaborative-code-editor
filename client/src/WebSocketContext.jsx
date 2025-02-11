@@ -6,10 +6,10 @@ export const WebSocketProvider = ({ children }) => {
   const [ws, setWs] = useState(null);
   const [files, setFiles] = useState([]); // State to store the list of files
   const [messageType, setMessageType] = useState(''); // Track the latest message type for debugging or logic
-  
+  const wsUrl = import.meta.env.VITE_WEBSOCKET_URL
 
   useEffect(() => {
-    const webSocket = new WebSocket('ws://localhost:3000'); // Replace with your WebSocket server URL
+    const webSocket = new WebSocket(wsUrl); // Replace with your WebSocket server URL
 
     webSocket.onopen = () => {
       console.log('WebSocket connection established');
@@ -26,12 +26,14 @@ export const WebSocketProvider = ({ children }) => {
           setFiles(data.files); // Update the file list
           break;
         case 'create_file':
-          console.log(`File created: ${data.fileName}`);
-          setFiles((prevFiles) => [...prevFiles, data.fileName]); // Add the new file to the list
+          console.log(`File created: ${data.payload.name}`);
+          
+          setFiles((prevFiles) => [...prevFiles, {name : data.payload.name}]); // Add the new file to the list
+          console.log(files);
           break;
         case 'delete_file':
-          console.log(`File deleted: ${data.fileName}`);
-          setFiles((prevFiles) => prevFiles.filter((file) => file !== data.fileName)); // Remove the file from the list
+          console.log(`File deleted: ${data.payload.name}`);
+          setFiles((prevFiles) => prevFiles.filter((file) => file.name !== data.payload.name)); // Remove the file from the list
           break;
         default:
           console.error(`Unknown message type: ${data.type}`);

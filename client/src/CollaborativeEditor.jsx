@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
-import { MonacoBinding } from 'y-monaco';
+import { MonacoBinding } from 'y-monaco'; 
 import React, { useEffect, useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
 
@@ -9,9 +9,9 @@ const CollaborativeEditor = ({ roomId }) => {
   const [editor, setEditor] = useState(null);
   const [provider, setProvider] = useState(null);
   const [binding, setBinding] = useState(null);
-
+  const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
   useEffect(() => {
-    const websocketProvider = new WebsocketProvider(`ws://localhost:1234`, roomId, ydoc);
+    const websocketProvider = new WebsocketProvider(wsUrl, roomId, ydoc);
     setProvider(websocketProvider);
 
     return () => {

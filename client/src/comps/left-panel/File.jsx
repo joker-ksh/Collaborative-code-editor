@@ -9,15 +9,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../AuthContext";
 import { Box, Button, TextField } from "@mui/material";
 import { useWebSocket } from "../../WebSocketContext";
-
+import DeleteIcon from '@mui/icons-material/Delete';
 const apiUrl = import.meta.env.VITE_SERVER_URL;
 
-export default function File() {
+export default function File({handleFileSelect}) {
   const [fileList, setFileList] = useState([]); // Updated to hold the list of files
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newFileName, setNewFileName] = useState(""); // State to store new file name
-  const { token } = useAuth();
+  const { token , roomId } = useAuth();
   const {files} = useWebSocket();
   useEffect(() => {
     if (files) {
@@ -65,7 +65,7 @@ export default function File() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fileName: newFileName }), // Pass the new file name in the request body
+        body: JSON.stringify({ fileName: newFileName , roomId }), // Pass the new file name in the request body
       });
 
       if (!response.ok) {
@@ -74,11 +74,32 @@ export default function File() {
 
       // Clear the input field and refetch files after successful creation
       setNewFileName("");
-      fetchFileStructure(); // Refetch file structure to get updated list
+      // fetchFileStructure(); // Refetch file structure to get updated list
     } catch (err) {
       setError(err.message);
     }
   };
+
+  const handleDeleteFile = async (fileName) => {
+    try {
+      const response = await fetch(apiUrl + "/delete-file", {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileName  , roomId}), 
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete file");
+      }
+
+      // fetchFileStructure(); // Refetch file structure to get updated list
+    } catch (err) {
+      setError(err.message);
+    }
+  }
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -117,11 +138,14 @@ export default function File() {
 
         {/* List of files */}
         {fileList.map((file, index) => (
-          <ListItemButton key={index}>
+          <ListItemButton key={index} onClick={() => handleFileSelect(file)}>
             <ListItemIcon>
               <InsertDriveFileIcon sx={{ color: "white" }} /> {/* File Icon */}
             </ListItemIcon>
-            <ListItemText primary={file.name} sx={{ color: "white" }} />
+            <ListItemText  primary={file.name} sx={{ color: "white" }} />
+            <Button variant="contained" color="error" onClick={() => handleDeleteFile(file.name)}>
+               <DeleteIcon />
+            </Button>
           </ListItemButton>
         ))}
       </List>
