@@ -1,7 +1,6 @@
 import React from 'react'
 import { colors, Typography } from '@mui/material'
 import { useTheme } from '@emotion/react'
-import ScrollableBox from '../scrollbar';
 export default function Console({consoleText}) {
     const theme = useTheme();
     return (

@@ -10,7 +10,8 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server }); //wrapping the websocket server with the http server
+//same port two different protocol.
 
 const PORT = 3000;
 const SECRET_KEY = 'your_secret_key';
@@ -61,7 +62,7 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const users = getUsers();
-
+  console.log("Login attempt : ",username)
   const user = users.find((u) => u.username === username);
   if (!user) {
     return res.status(400).json({ message: 'Invalid credentials' });
@@ -177,6 +178,10 @@ const broadcastToRoom = (roomId, message) => {
 app.post('/create-file', authenticateToken, (req, res) => {
   const { fileName, content, roomId } = req.body;
   // const userFolderPath = path.join(BASE_DIR, req.user.username);
+  if (!rooms[roomId] || !rooms[roomId].host) {
+    return res.status(400).json({ message: 'Room not found or no host' });
+  }
+
   const userFolderPath = path.join(BASE_DIR, rooms[roomId].host);
   console.log(userFolderPath)
 
@@ -200,6 +205,9 @@ app.post('/create-file', authenticateToken, (req, res) => {
 // delete a file
 app.delete('/delete-file', authenticateToken, (req, res) => {
   const { fileName, roomId } = req.body;
+  if (!rooms[roomId] || !rooms[roomId].host) {
+    return res.status(400).json({ message: 'Room not found or no host' });
+  }
   const userFolderPath = path.join(BASE_DIR, rooms[roomId].host);
   console.log(fileName,"delete")
   const filePath = path.join(userFolderPath, fileName);

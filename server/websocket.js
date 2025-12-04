@@ -2,8 +2,6 @@ const WebSocket = require('ws');
 const Y = require('yjs');
 const { setupWSConnection , setPersistence } = require('y-websocket/bin/utils');
 
-
-
 const wss = new WebSocket.Server({ port: 1234 });
 
 wss.on('connection', (conn, req) => {
@@ -11,17 +9,14 @@ wss.on('connection', (conn, req) => {
     console.log(`Client connected to document: ${docName}`);
     
 
+    //THis is the actual magic
+    //Here is the hooking of all clients is hapening with the yjs document
     setupWSConnection(conn, req, {
         docName,
         gc: true,
-
-
-       
-      
-       
     });
 
-    // set persistence
+    // set persistence 
     setPersistence({
         bindState: async (docName, ydoc) => {
             console.log(`Binding state for document: ${docName}`);

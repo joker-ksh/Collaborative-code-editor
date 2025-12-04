@@ -49,7 +49,7 @@ const Auth = () => {
 
       if (response.ok) {
         const data = await response.json();
-        login(data.token);  // Automatically login after registration
+        login(data.token);
       } else {
         const errorData = await response.json();
         setError(errorData.message);
@@ -60,34 +60,75 @@ const Auth = () => {
   };
 
   return (
-    <Box component="form" onSubmit={isRegistering ? handleRegister : handleLogin}>
-      <TextField
-        label="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        fullWidth
-        margin="normal"
-      />
-    
-      <TextField
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        fullWidth
-        margin="normal"
-      />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Button type="submit" variant="contained" color="primary">
-        {isRegistering ? 'Register' : 'Login'}
-      </Button>
-      <Button 
-        onClick={() => setIsRegistering(!isRegistering)} 
-        color="secondary">
-        {isRegistering ? 'Already have an account? Login' : 'Don\'t have an account? Register'}
-      </Button>
-    </Box>
+    <div style={styles.container}>
+      <Box 
+        component="form" 
+        onSubmit={isRegistering ? handleRegister : handleLogin}
+        style={styles.formBox}
+      >
+        <TextField
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          fullWidth
+          margin="normal"
+          required
+        />
+      
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          fullWidth
+          margin="normal"
+          required
+        />
+        
+        {error && <p style={styles.error}>{error}</p>}
+
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="primary"
+          style={styles.submitButton}
+        >
+          {isRegistering ? 'Register' : 'Login'}
+        </Button>
+
+        <Button 
+          onClick={() => {
+            setIsRegistering(!isRegistering);
+            setError('');
+          }} 
+          color="secondary"
+        >
+          {isRegistering ? 'Already have an account? Login' : 'Don\'t have an account? Register'}
+        </Button>
+      </Box>
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100vh'
+  },
+  formBox: {
+    padding: '20px',
+    maxWidth: '400px',
+    width: '100%'
+  },
+  error: {
+    color: 'red'
+  },
+  submitButton: {
+    marginTop: '16px',
+    marginRight: '8px'
+  }
 };
 
 export default Auth;

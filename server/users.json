@@ -13,5 +13,20 @@
     "id": 3,
     "username": "user",
     "password": "$2a$10$eOYxlYWgM54ke9tsfE6JM.5e2NLNjbGN7L2g0Rnt/pR9SCvWnH8/."
+  },
+  {
+    "id": 4,
+    "username": "admin1",
+    "password": "$2a$10$3dGa/IZwlR2i37AeY8Y5q.MbNP7QT3ujMZopGC3T4/HJtA8AfsmUy"
+  },
+  {
+    "id": 5,
+    "username": "test",
+    "password": "$2a$10$xewP2sCtosmxBwPFkZ.2aevm.ESMWSVgfFOfL.I5xUxWJ5axnOq2C"
+  },
+  {
+    "id": 6,
+    "username": "hello",
+    "password": "$2a$10$HjvjskfdZZJho2A53ZOw/eEdMXXwZ.l6.JaKxy5sUb0VxTVJvqmCy"
   }
 ]

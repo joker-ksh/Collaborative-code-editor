@@ -8,7 +8,6 @@ import Nav from "./comps/right-panel/top-nav/Nav";
 import Main from "./comps/right-panel/main";
 import NavTop from "./comps/editor-panel/nav-top/NavTop";
 import Core from "./comps/editor-panel/core/Core";
-import Bottom from "./comps/editor-panel/bottom-nav/Bottom";
 import { useWebSocket } from "./WebSocketContext";
 import { useAuth } from "./AuthContext";
 // const Item = styled(Paper)(({ theme }) => ({

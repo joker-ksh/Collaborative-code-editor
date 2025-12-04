@@ -7,13 +7,15 @@ import Editor from '@monaco-editor/react';
 const CollaborativeEditor = ({ roomId }) => {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState(null);
-  const [provider, setProvider] = useState(null);
-  const [binding, setBinding] = useState(null);
+  const [provider, setProvider] = useState(null); //holds the websocket connection 
+  const [binding, setBinding] = useState(null);  //holds monaco and yjs binding
   const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
   useEffect(() => {
-    const websocketProvider = new WebsocketProvider(wsUrl, roomId, ydoc);
+    const websocketProvider = new WebsocketProvider(wsUrl, roomId, ydoc); //connecting the client to websocket server with the room id and the y.doc sync 
     setProvider(websocketProvider);
 
+
+    //cleanup to unmount the disconnect connection and destroying the yjs document from memory to free the memory
     return () => {
       if(websocketProvider.wsconnected) {
         websocketProvider.disconnect();
@@ -22,6 +24,8 @@ const CollaborativeEditor = ({ roomId }) => {
     };
   }, [roomId, ydoc]);
 
+
+  //binding the monaco editor to the yjs text
   useEffect(() => {
     if (provider === null || editor === null) return;
 
